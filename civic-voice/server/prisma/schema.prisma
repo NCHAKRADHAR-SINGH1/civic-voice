@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AuthMethod {
+  MOBILE
+}
+
+enum UserRole {
+  CITIZEN
+  ADMIN
+  OWNER
+}
+
+enum AuditAction {
+  AUTHENTICATED
+  ROLE_UPDATED
+  LOCATION_UPDATED
+  ISSUE_CREATED
+  ISSUE_UPVOTED
+  COMMENT_ADDED
+  ISSUE_REPORTED
+  ISSUE_STATUS_UPDATED
+  ISSUE_RESOLVED
+  ADMIN_ACCESS_UPDATED
+}
+
+enum ProblemStatus {
+  REPORTED
+  IN_PROGRESS
+  RESOLVED
+}
+
+model User {
+  id                   String   @id @default(cuid())
+  mobile               String?  @unique
+  authMethod           AuthMethod
+  role                 UserRole @default(CITIZEN)
+  adminAccessDisabledAt DateTime?
+  country              String?
+  state                String?
+  district             String?
+  cityVillage          String?
+  locationUpdatedAt    DateTime?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  problems             Problem[]
+  upvotes              Upvote[]
+  comments             Comment[]
+  reports              SpamReport[]
+  auditLogs            AuditLog[]
+}
+
+model Problem {
+  id                    String        @id @default(cuid())
+  title                 String
+  description           String
+  category              String
+  imageUrl              String?
+  country               String
+  state                 String
+  district              String
+  cityVillage           String
+  status                ProblemStatus @default(REPORTED)
+  departmentTag         String?
+  resolutionProofImages String[]      @default([])
+  resolvedAt            DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  userId                String
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  upvotes               Upvote[]
+  comments              Comment[]
+  reports               SpamReport[]
+
+  @@index([country, state, district, cityVillage])
+  @@index([country, state, district, cityVillage, createdAt])
+  @@index([category])
+  @@index([status, createdAt])
+  @@index([createdAt])
+}
+
+model Upvote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  userId    String
+  problemId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  text      String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  userId    String
+  problemId String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@index([problemId, createdAt])
+}
+
+model SpamReport {
+  id         String   @id @default(cuid())
+  reason     String
+  createdAt  DateTime @default(now())
+  userId     String
+  problemId  String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problem    Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId])
+  @@index([problemId, createdAt])
+}
+
+model AuditLog {
+  id         String      @id @default(cuid())
+  action     AuditAction
+  actorId     String?
+  actorRole   UserRole?
+  entityType  String
+  entityId    String?
+  summary     String
+  createdAt   DateTime    @default(now())
+  actor       User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorRole, createdAt])
+  @@index([action, createdAt])
+}

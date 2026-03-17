@@ -1,0 +1,249 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f4efe6;
+  --bg-deep: #ebe0d0;
+  --surface: #fffaf4;
+  --surface-strong: #fffdf8;
+  --text: #13212a;
+  --muted: #61717a;
+  --accent: #cb5d3b;
+  --accent-2: #1f5b55;
+  --accent-3: #d6a96e;
+  --line: rgba(12, 20, 27, 0.08);
+  --shadow: 0 24px 80px rgba(31, 29, 24, 0.13);
+}
+
+.dark {
+  --bg: #101719;
+  --bg-deep: #182325;
+  --surface: #172124;
+  --surface-strong: #1b2a2d;
+  --text: #edf4f4;
+  --muted: #9bb0b5;
+  --accent: #ea7d53;
+  --accent-2: #6ac0af;
+  --accent-3: #c89d67;
+  --line: rgba(255, 255, 255, 0.1);
+  --shadow: 0 28px 90px rgba(0, 0, 0, 0.38);
+}
+
+@keyframes auroraDrift {
+  0% {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(2%, 1.5%, 0) scale(1.04);
+  }
+  100% {
+    transform: translate3d(-2%, -1%, 0) scale(1);
+  }
+}
+
+@keyframes softPulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+html,
+body {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(203, 93, 59, 0.18), transparent 34%),
+    radial-gradient(circle at 82% 14%, rgba(31, 91, 85, 0.17), transparent 38%),
+    radial-gradient(circle at 55% 100%, rgba(214, 169, 110, 0.12), transparent 36%),
+    linear-gradient(180deg, color-mix(in oklab, var(--bg-deep) 18%, transparent), transparent 24%),
+    var(--bg);
+  color: var(--text);
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-body), sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  width: 48vw;
+  height: 48vw;
+  max-width: 540px;
+  max-height: 540px;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: -1;
+  filter: blur(56px);
+  animation: auroraDrift 18s ease-in-out infinite;
+}
+
+body::before {
+  top: -18vw;
+  left: -10vw;
+  background: radial-gradient(circle, color-mix(in oklab, var(--accent) 48%, transparent), transparent 70%);
+}
+
+body::after {
+  right: -10vw;
+  bottom: -20vw;
+  background: radial-gradient(circle, color-mix(in oklab, var(--accent-2) 52%, transparent), transparent 70%);
+  animation-duration: 24s;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading), sans-serif;
+  letter-spacing: -0.015em;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 28%, transparent);
+}
+
+.page-shell {
+  @apply relative overflow-hidden rounded-[2rem] border px-4 py-5 sm:px-6 sm:py-6 lg:px-8;
+  border-color: var(--line);
+  background:
+    linear-gradient(180deg, color-mix(in oklab, var(--surface-strong) 85%, transparent), color-mix(in oklab, var(--surface) 92%, transparent)),
+    color-mix(in oklab, var(--surface) 86%, transparent);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.page-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top left, color-mix(in oklab, var(--accent) 10%, transparent), transparent 28%),
+    radial-gradient(circle at bottom right, color-mix(in oklab, var(--accent-2) 10%, transparent), transparent 30%);
+  opacity: 0.9;
+}
+
+.hero-panel {
+  @apply relative overflow-hidden rounded-[2rem] border p-6 sm:p-8;
+  border-color: var(--line);
+  background:
+    linear-gradient(135deg, color-mix(in oklab, var(--surface-strong) 95%, transparent), color-mix(in oklab, var(--surface) 82%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.36), 0 20px 60px rgba(17, 24, 39, 0.08);
+}
+
+.hero-panel::after {
+  content: "";
+  position: absolute;
+  inset: auto -15% -35% auto;
+  width: 16rem;
+  height: 16rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in oklab, var(--accent-3) 42%, transparent), transparent 70%);
+  filter: blur(30px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.eyebrow {
+  @apply mb-3 inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em];
+  color: color-mix(in oklab, var(--accent-2) 64%, var(--text));
+  background: color-mix(in oklab, var(--accent-2) 10%, var(--surface));
+  border: 1px solid color-mix(in oklab, var(--accent-2) 16%, transparent);
+}
+
+.stat-chip {
+  @apply rounded-2xl px-4 py-3;
+  background: color-mix(in oklab, var(--surface-strong) 88%, transparent);
+  border: 1px solid var(--line);
+}
+
+.card {
+  @apply rounded-[1.65rem] border p-4 shadow-card sm:p-5;
+  border-color: var(--line);
+  background: linear-gradient(180deg, color-mix(in oklab, var(--surface-strong) 86%, transparent), color-mix(in oklab, var(--surface) 92%, transparent));
+  backdrop-filter: blur(16px);
+  transition: transform 220ms ease, box-shadow 260ms ease, border-color 220ms ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 60px rgba(17, 24, 39, 0.14);
+  border-color: color-mix(in oklab, var(--accent-2) 28%, var(--line));
+}
+
+.input {
+  @apply w-full rounded-2xl border px-4 py-3 text-sm outline-none transition;
+  border-color: color-mix(in oklab, var(--text) 10%, transparent);
+  background: color-mix(in oklab, var(--surface-strong) 94%, transparent);
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.input:focus {
+  border-color: var(--accent-2);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent-2) 24%, transparent);
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  @apply rounded-2xl px-4 py-3 font-semibold text-white transition;
+  background: linear-gradient(125deg, var(--accent), #dc8c47, var(--accent));
+  background-size: 220% 220%;
+  animation: shimmer 6s linear infinite;
+  box-shadow: 0 10px 24px color-mix(in oklab, var(--accent) 34%, transparent);
+  transition: transform 220ms ease, filter 220ms ease, box-shadow 220ms ease;
+}
+
+.btn-secondary {
+  @apply rounded-2xl border px-4 py-3 font-semibold transition;
+  border-color: var(--line);
+  background: color-mix(in oklab, var(--surface-strong) 82%, transparent);
+  transition: transform 220ms ease, border-color 220ms ease, background-color 220ms ease;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary:hover {
+  filter: saturate(1.07) brightness(1.03);
+  box-shadow: 0 14px 28px color-mix(in oklab, var(--accent) 40%, transparent);
+}
+
+.btn-secondary:hover {
+  border-color: color-mix(in oklab, var(--accent-2) 38%, rgba(0, 0, 0, 0.1));
+  background: color-mix(in oklab, var(--surface) 82%, transparent);
+}
+
+.soft-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, var(--text) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, var(--text) 4%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
