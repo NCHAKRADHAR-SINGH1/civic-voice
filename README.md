@@ -184,6 +184,7 @@ Required frontend env:
 
 Required backend env:
 - `DATABASE_URL="..."`
+- `DIRECT_DATABASE_URL="..."` (Neon direct/non-pooler URL for Prisma migrations)
 - `JWT_SECRET="..."`
 - `CORS_ORIGIN="https://app.example.com"`
 - `AUTH_COOKIE_SAME_SITE="none"` when frontend and backend are on different subdomains and you need cross-site cookies
