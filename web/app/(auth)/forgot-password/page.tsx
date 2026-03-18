@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
       const response = await apiFetch("/auth/send-password-reset-otp", {
         method: "POST",
         body: JSON.stringify({ identifier: normalizedIdentifier }),
-      });
+      }) as Response;
 
       if (!response.ok) {
         const data = await response.json();
@@ -88,7 +88,7 @@ export default function ForgotPasswordPage() {
           password: newPassword,
           confirmPassword,
         }),
-      });
+      }) as Response;
 
       if (!response.ok) {
         const data = await response.json();
