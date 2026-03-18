@@ -126,7 +126,6 @@ export default function DashboardPage() {
               <h2 className="text-3xl">{t("dashboard.feedTitle")}</h2>
             </div>
             <div className="flex gap-2">
-              <Link className="btn-secondary" href="/location">{t("dashboard.changeLocation")}</Link>
               {user.role === "ADMIN" && !user.adminAccessDisabledAt && <Link className="btn-secondary" href="/admin">{t("dashboard.admin")}</Link>}
               <button className="btn-secondary" onClick={logout} type="button">{t("dashboard.logout")}</button>
             </div>

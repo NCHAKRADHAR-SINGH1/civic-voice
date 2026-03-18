@@ -13,28 +13,24 @@ const locationSchema = z.object({
 
 export async function updatePrimaryLocation(req, res) {
   const payload = locationSchema.parse(req.body);
-  const cooldownDays = Number(
-    process.env.LOCATION_CHANGE_COOLDOWN_DAYS ||
-    (process.env.LOCATION_CHANGE_COOLDOWN_MONTHS ? Number(process.env.LOCATION_CHANGE_COOLDOWN_MONTHS) * 30 : 30)
-  );
   const user = req.user;
 
   if (user.role === "ADMIN") {
-    return res.status(403).json({ message: "Admin location is managed by admin secret code" });
+    return res.status(403).json({ message: "Admin location is managed by admin secret code. Use admin code to update location." });
   }
 
-  const nextLocation = payload;
-
+  // If location is already set, lock it - users cannot change after initial setup
   if (user.locationUpdatedAt) {
-    const nextAllowed = new Date(user.locationUpdatedAt);
-    nextAllowed.setDate(nextAllowed.getDate() + cooldownDays);
-    if (nextAllowed > new Date()) {
-      return res.status(400).json({
-        message: `Location can be changed only once every ${cooldownDays} day(s)`,
-        nextAllowedAt: nextAllowed,
-      });
-    }
+    return res.status(403).json({ message: "Your location is locked after initial setup and cannot be changed." });
   }
+
+  // Normalize location values to lowercase for consistency
+  const nextLocation = {
+    country: payload.country.trim().toLowerCase(),
+    state: payload.state.trim().toLowerCase(),
+    district: payload.district.trim().toLowerCase(),
+    cityVillage: payload.cityVillage.trim().toLowerCase(),
+  };
 
   const updated = isDemoMode()
     ? updateDemoUser(user.mobile, {
