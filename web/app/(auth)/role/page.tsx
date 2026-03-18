@@ -124,6 +124,17 @@ export default function RolePage() {
                 </div>
               </div>
             </button>
+
+            <div className="flex gap-2 pt-2">
+              <button 
+                onClick={() => router.push("/location")}
+                className="btn-secondary flex-1"
+                type="button"
+                disabled={selecting}
+              >
+                Back
+              </button>
+            </div>
           </motion.div>
         ) : (
           <motion.form variants={fadeUp} onSubmit={(event) => submitRole("ADMIN", event)} className="space-y-4">

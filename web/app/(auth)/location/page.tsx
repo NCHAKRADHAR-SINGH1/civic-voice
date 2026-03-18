@@ -314,9 +314,19 @@ export default function LocationPage() {
 
             {error && <p className="text-sm text-red-500">{error}</p>}
 
-            <button className="btn-primary w-full" type="submit" disabled={saving || !canSubmit}>
-              {saving ? t("location.saving") : t("location.save")}
-            </button>
+            <div className="flex gap-2 pt-2">
+              <button 
+                onClick={() => router.push("/login")}
+                className="btn-secondary flex-1" 
+                type="button"
+                disabled={saving}
+              >
+                Back
+              </button>
+              <button className="btn-primary flex-1" type="submit" disabled={saving || !canSubmit}>
+                {saving ? t("location.saving") : "Next"}
+              </button>
+            </div>
             </form>
           </section>
         </section>

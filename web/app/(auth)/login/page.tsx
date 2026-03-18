@@ -76,6 +76,14 @@ export default function LoginPage() {
         return;
       }
 
+      // Check if user is fully registered with location and role set
+      const hasLocation = response.user.location?.country && response.user.location?.state && response.user.location?.district && response.user.location?.cityVillage;
+      if (hasLocation) {
+        // User is fully registered, take them directly to dashboard
+        router.push("/dashboard");
+        return;
+      }
+
       localStorage.setItem(FORCE_ROLE_SELECTION_KEY, "true");
       router.push("/location");
     } catch (err) {
