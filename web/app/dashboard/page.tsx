@@ -148,7 +148,7 @@ export default function DashboardPage() {
           </div>
         </motion.div>
 
-        <motion.form className="card space-y-4" onSubmit={createIssue} variants={fadeUp}>
+        {user.role !== "ADMIN" && <motion.form className="card space-y-4" onSubmit={createIssue} variants={fadeUp}>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="eyebrow">Raise New Issue</p>
@@ -183,7 +183,7 @@ export default function DashboardPage() {
           <input className="input" type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
           <button className="btn-primary" type="submit" disabled={loading}>{t("dashboard.postIssue")}</button>
           {error && <p className="text-sm text-red-500">{error}</p>}
-        </motion.form>
+        </motion.form>}
 
         {loading && <p className="text-sm text-[var(--muted)]">{t("dashboard.loadingIssues")}</p>}
         <motion.div className="space-y-4" variants={containerStagger}>

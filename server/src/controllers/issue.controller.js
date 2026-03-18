@@ -72,6 +72,11 @@ export async function createIssue(req, res) {
   const payload = createIssueSchema.parse(req.body);
   const user = req.user;
 
+  // Prevent admins from creating issues
+  if (user.role === "ADMIN") {
+    return res.status(403).json({ message: "Admins cannot create issues. Use moderation queue to manage existing issues." });
+  }
+
   if (!user.country || !user.state || !user.district || !user.cityVillage) {
     return res.status(400).json({ message: "Set primary location before posting" });
   }
