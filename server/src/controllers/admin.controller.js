@@ -136,6 +136,20 @@ export async function resolveIssue(req, res) {
     return res.status(404).json({ message: "Issue not found in your assigned location" });
   }
 
+  // REQUIRED: At least one proof image must be provided
+  if (!payload.resolutionProofImages || payload.resolutionProofImages.length === 0) {
+    return res.status(400).json({ message: "At least one proof image is required to resolve an issue" });
+  }
+
+  // Validate that all proof images are valid URLs
+  for (const imageUrl of payload.resolutionProofImages) {
+    try {
+      new URL(imageUrl);
+    } catch (_) {
+      return res.status(400).json({ message: "Invalid proof image URL provided" });
+    }
+  }
+
   // Only admins can add resolution proof images
   const updated = await prisma.problem.update({
     where: { id },

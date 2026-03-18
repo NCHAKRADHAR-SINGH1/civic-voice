@@ -209,6 +209,12 @@ export default function AdminPage() {
                 </div>
               )}
 
+              {proofImages.length === 0 && (
+                <div className="rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                  ⚠️ At least one proof image is required before resolving
+                </div>
+              )}
+
               <div className="flex gap-2">
                 <button
                   type="button"
