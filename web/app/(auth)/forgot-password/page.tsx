@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState, useEffect, useRef } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 
@@ -23,12 +23,6 @@ function normalizeMobileNumber(identifier: string) {
   return identifier.replace(/\s/g, "");
 }
 
-declare global {
-  interface Window {
-    grecaptcha: any;
-  }
-}
-
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [identifier, setIdentifier] = useState("");
@@ -39,41 +33,6 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [captchaToken, setCaptchaToken] = useState("");
-  const [captchaScriptLoaded, setCaptchaScriptLoaded] = useState(false);
-  const captchaContainerRef = useRef<HTMLDivElement>(null);
-
-  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
-
-  // Load reCAPTCHA script
-  useEffect(() => {
-    if (captchaScriptLoaded || typeof window === "undefined") {
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://www.google.com/recaptcha/api.js";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setCaptchaScriptLoaded(true);
-    document.head.appendChild(script);
-  }, [captchaScriptLoaded]);
-
-  // Render reCAPTCHA widget when script is loaded
-  useEffect(() => {
-    if (!captchaScriptLoaded || !window.grecaptcha || !captchaContainerRef.current || !sent) {
-      return;
-    }
-
-    if (captchaContainerRef.current.children.length === 0) {
-      window.grecaptcha.render(captchaContainerRef.current, {
-        sitekey: recaptchaSiteKey,
-        callback: (token: string) => {
-          setCaptchaToken(token);
-        },
-      });
-    }
-  }, [captchaScriptLoaded, sent]);
 
   async function handleSendOtp(e: FormEvent) {
     e.preventDefault();
@@ -82,18 +41,10 @@ export default function ForgotPasswordPage() {
     setSuccessMessage("");
 
     try {
-      // Validate captcha (only if site key is configured)
-      if (recaptchaSiteKey && !captchaToken) {
-        throw new Error("Please complete the reCAPTCHA verification.");
-      }
-
       const normalizedIdentifier = normalizeMobileNumber(identifier);
       const response = await apiFetch("/auth/send-password-reset-otp", {
         method: "POST",
-        body: JSON.stringify({ 
-          identifier: normalizedIdentifier,
-          recaptchaToken: captchaToken,
-        }),
+        body: JSON.stringify({ identifier: normalizedIdentifier }),
       }) as Response;
 
       if (!response.ok) {
@@ -191,8 +142,6 @@ export default function ForgotPasswordPage() {
                 />
               </div>
 
-              <div ref={captchaContainerRef} className="g-recaptcha" style={{ display: 'flex', justifyContent: 'center' }}></div>
-
               <button
                 type="submit"
                 disabled={loading}
@@ -276,7 +225,6 @@ export default function ForgotPasswordPage() {
                   setOtp("");
                   setNewPassword("");
                   setConfirmPassword("");
-                  setCaptchaToken("");
                   setError("");
                 }}
                 disabled={loading}

@@ -8,18 +8,15 @@ import { isOwnerMobile } from "../utils/admin-access.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
 import { isDemoMode, getDemoUser, setDemoUser, updateDemoUser } from "../utils/demo.js";
 import { generateAndSendOtp, verifyOtp, clearOtp } from "../utils/otp.js";
-import { verifyRecaptchaToken } from "../utils/recaptcha.js";
 
 const sendPasswordResetOtpSchema = z.object({
   identifier: z.string().min(10),
-  recaptchaToken: z.string().optional(),
 });
 
 const registerWithPasswordSchema = z.object({
   identifier: z.string().min(10),
   password: z.string().min(8),
   confirmPassword: z.string().min(8),
-  recaptchaToken: z.string().optional(),
 }).refine((value) => value.password === value.confirmPassword, {
   message: "Password and confirm password must match",
   path: ["confirmPassword"],
@@ -101,14 +98,6 @@ export async function registerWithPassword(req, res) {
 
   if (!/^\+[1-9]\d{9,14}$/.test(normalizedIdentifier)) {
     return res.status(400).json({ message: "Enter a valid phone number in +91XXXXXXXXXX format." });
-  }
-
-  // Verify reCAPTCHA token
-  if (payload.recaptchaToken) {
-    const recaptchaVerification = await verifyRecaptchaToken(payload.recaptchaToken);
-    if (!recaptchaVerification.success) {
-      return res.status(400).json({ message: "reCAPTCHA verification failed. Please try again." });
-    }
   }
 
   let user;
@@ -227,14 +216,6 @@ export async function sendPasswordResetOtp(req, res) {
 
   const payload = parsedPayload.data;
   const normalizedIdentifier = normalizeMobileNumber(payload.identifier);
-
-  // Verify reCAPTCHA token
-  if (payload.recaptchaToken) {
-    const recaptchaVerification = await verifyRecaptchaToken(payload.recaptchaToken);
-    if (!recaptchaVerification.success) {
-      return res.status(400).json({ message: "reCAPTCHA verification failed. Please try again." });
-    }
-  }
 
   // Check if user exists
   const user = await prisma.user.findFirst({ where: { mobile: normalizedIdentifier } });

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState, useEffect, useRef } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { User } from "@/lib/types";
@@ -28,12 +28,6 @@ function normalizeMobileNumber(identifier: string) {
 type AuthMode = "login" | "register";
 const FORCE_ROLE_SELECTION_KEY = "civic_voice_force_role_selection";
 
-declare global {
-  interface Window {
-    grecaptcha: any;
-  }
-}
-
 export default function LoginPage() {
   const { t } = useI18n();
   const router = useRouter();
@@ -43,42 +37,6 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [captchaToken, setCaptchaToken] = useState("");
-  const [captchaScriptLoaded, setCaptchaScriptLoaded] = useState(false);
-  const captchaContainerRef = useRef<HTMLDivElement>(null);
-  
-  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
-  const shouldRenderCaptcha = mode === "register" && Boolean(recaptchaSiteKey);
-
-  // Load reCAPTCHA script
-  useEffect(() => {
-    if (!shouldRenderCaptcha || captchaScriptLoaded || typeof window === "undefined") {
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://www.google.com/recaptcha/api.js";
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setCaptchaScriptLoaded(true);
-    document.head.appendChild(script);
-  }, [shouldRenderCaptcha, captchaScriptLoaded]);
-
-  // Render reCAPTCHA widget when script is loaded
-  useEffect(() => {
-    if (!shouldRenderCaptcha || !captchaScriptLoaded || !window.grecaptcha || !captchaContainerRef.current) {
-      return;
-    }
-
-    if (captchaContainerRef.current.children.length === 0) {
-      window.grecaptcha.render(captchaContainerRef.current, {
-        sitekey: recaptchaSiteKey,
-        callback: (token: string) => {
-          setCaptchaToken(token);
-        },
-      });
-    }
-  }, [shouldRenderCaptcha, captchaScriptLoaded]);
 
   const submitAuth = async (e: FormEvent) => {
     e.preventDefault();
@@ -100,11 +58,6 @@ export default function LoginPage() {
         throw new Error("Password and confirm password must match.");
       }
 
-      // Validate captcha for registration (only if site key is configured)
-      if (mode === "register" && recaptchaSiteKey && !captchaToken) {
-        throw new Error("Please complete the reCAPTCHA verification.");
-      }
-
       const response = await apiFetch<{ user: User }>(mode === "register" ? "/auth/register-password" : "/auth/login-password", {
         method: "POST",
         body: {
@@ -113,7 +66,6 @@ export default function LoginPage() {
           ...(mode === "register"
             ? {
               confirmPassword,
-              recaptchaToken: captchaToken,
             }
             : {}),
         },
@@ -184,7 +136,6 @@ export default function LoginPage() {
             onClick={() => {
               setMode("register");
               setError("");
-              setCaptchaToken("");
             }}
           >
             Create account
@@ -231,7 +182,6 @@ export default function LoginPage() {
                 minLength={8}
                 autoComplete="new-password"
               />
-              <div ref={captchaContainerRef} className="g-recaptcha" style={{ display: 'flex', justifyContent: 'center' }}></div>
             </>
           )}
 
