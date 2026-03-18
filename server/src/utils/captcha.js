@@ -22,10 +22,6 @@ export async function verifyTurnstileToken(token, remoteIp) {
   payload.append("secret", secret);
   payload.append("response", token);
 
-  if (remoteIp) {
-    payload.append("remoteip", remoteIp);
-  }
-
   const response = await fetch(TURNSTILE_VERIFY_URL, {
     method: "POST",
     headers: {
@@ -44,10 +40,13 @@ export async function verifyTurnstileToken(token, remoteIp) {
   const result = await response.json();
 
   if (!result.success) {
+    const errorCodes = Array.isArray(result["error-codes"]) ? result["error-codes"] : [];
     return {
       success: false,
-      message: "Captcha verification failed. Please complete captcha again.",
-      errors: result["error-codes"] || [],
+      message: errorCodes.length > 0
+        ? `Captcha verification failed: ${errorCodes.join(", ")}`
+        : "Captcha verification failed. Please complete captcha again.",
+      errors: errorCodes,
     };
   }
 
