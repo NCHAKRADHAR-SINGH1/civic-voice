@@ -196,8 +196,6 @@ Required backend env:
 - `FIREBASE_PROJECT_ID="..."`
 - `FIREBASE_CLIENT_EMAIL="..."`
 - `FIREBASE_PRIVATE_KEY="..."`
-- `TURNSTILE_SECRET_KEY="..."`
-- `TURNSTILE_VERIFY_ENABLED="true"`
 - `CLOUDINARY_CLOUD_NAME="..."`
 - `CLOUDINARY_API_KEY="..."`
 - `CLOUDINARY_API_SECRET="..."`
@@ -225,8 +223,6 @@ Render backend:
    - `FIREBASE_PROJECT_ID=...`
    - `FIREBASE_CLIENT_EMAIL=...`
    - `FIREBASE_PRIVATE_KEY=...`
-   - `TURNSTILE_SECRET_KEY=...`
-   - `TURNSTILE_VERIFY_ENABLED=true`
    - `CLOUDINARY_CLOUD_NAME=...`
    - `CLOUDINARY_API_KEY=...`
    - `CLOUDINARY_API_SECRET=...`
@@ -246,7 +242,6 @@ Vercel frontend:
    - `NEXT_PUBLIC_FIREBASE_APP_ID=...`
    - `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=...`
    - `NEXT_PUBLIC_FIREBASE_USE_TEST_MODE=false`
-   - `NEXT_PUBLIC_TURNSTILE_SITE_KEY=...`
 5. Add the deployed Vercel domain to Firebase Authorized Domains.
 
 Cross-site auth note:

@@ -1,28 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import Script from "next/script";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { User } from "@/lib/types";
 import { useI18n } from "@/components/i18n-provider";
-
-type TurnstileApi = {
-  render: (element: string | HTMLElement, options: {
-    sitekey: string;
-    callback: (token: string) => void;
-    "expired-callback"?: () => void;
-    "error-callback"?: () => void;
-  }) => string;
-  reset: (widgetId?: string) => void;
-};
-
-declare global {
-  interface Window {
-    turnstile?: TurnstileApi;
-  }
-}
 
 function normalizeMobileNumber(identifier: string) {
   const digits = identifier.replace(/\D/g, "");
@@ -48,43 +31,12 @@ const FORCE_ROLE_SELECTION_KEY = "civic_voice_force_role_selection";
 export default function LoginPage() {
   const { t } = useI18n();
   const router = useRouter();
-  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || "";
-  const captchaContainerRef = useRef<HTMLDivElement | null>(null);
-  const captchaWidgetIdRef = useRef<string | null>(null);
   const [mode, setMode] = useState<AuthMode>("login");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [captchaToken, setCaptchaToken] = useState("");
-  const [captchaScriptLoaded, setCaptchaScriptLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const shouldRenderCaptcha = mode === "register" && Boolean(turnstileSiteKey);
-
-  useEffect(() => {
-    if (!shouldRenderCaptcha || !captchaScriptLoaded || !window.turnstile || !captchaContainerRef.current) {
-      return;
-    }
-
-    if (captchaWidgetIdRef.current) {
-      window.turnstile.reset(captchaWidgetIdRef.current);
-      return;
-    }
-
-    captchaWidgetIdRef.current = window.turnstile.render(captchaContainerRef.current, {
-      sitekey: turnstileSiteKey,
-      callback: (token: string) => {
-        setCaptchaToken(token);
-      },
-      "expired-callback": () => {
-        setCaptchaToken("");
-      },
-      "error-callback": () => {
-        setCaptchaToken("");
-      },
-    });
-  }, [captchaScriptLoaded, shouldRenderCaptcha, turnstileSiteKey]);
 
   const submitAuth = async (e: FormEvent) => {
     e.preventDefault();
@@ -106,24 +58,6 @@ export default function LoginPage() {
         throw new Error("Password and confirm password must match.");
       }
 
-      if (mode === "register") {
-        const formElement = e.currentTarget as HTMLFormElement;
-        const fallbackToken = String(new FormData(formElement).get("cf-turnstile-response") || "").trim();
-        const effectiveCaptchaToken = (captchaToken || fallbackToken).trim();
-
-        if (!turnstileSiteKey) {
-          throw new Error("Captcha is not configured for signup.");
-        }
-
-        if (!effectiveCaptchaToken) {
-          throw new Error("Please complete captcha before creating account.");
-        }
-
-        if (!captchaToken && effectiveCaptchaToken) {
-          setCaptchaToken(effectiveCaptchaToken);
-        }
-      }
-
       const response = await apiFetch<{ user: User }>(mode === "register" ? "/auth/register-password" : "/auth/login-password", {
         method: "POST",
         body: {
@@ -132,7 +66,6 @@ export default function LoginPage() {
           ...(mode === "register"
             ? {
               confirmPassword,
-              captchaToken: (captchaToken || String(new FormData(e.currentTarget as HTMLFormElement).get("cf-turnstile-response") || "")).trim(),
             }
             : {}),
         },
@@ -147,10 +80,6 @@ export default function LoginPage() {
       router.push("/location");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed.");
-      if (mode === "register" && captchaWidgetIdRef.current && window.turnstile) {
-        window.turnstile.reset(captchaWidgetIdRef.current);
-        setCaptchaToken("");
-      }
     } finally {
       setLoading(false);
     }
@@ -188,7 +117,6 @@ export default function LoginPage() {
             onClick={() => {
               setMode("login");
               setConfirmPassword("");
-              setCaptchaToken("");
               setError("");
             }}
           >
@@ -199,7 +127,6 @@ export default function LoginPage() {
             className={`rounded-xl px-3 py-2 text-sm font-medium transition ${mode === "register" ? "bg-white text-black shadow-sm dark:bg-white dark:text-black" : "text-[var(--muted)]"}`}
             onClick={() => {
               setMode("register");
-              setCaptchaToken("");
               setError("");
             }}
           >
@@ -247,10 +174,6 @@ export default function LoginPage() {
                 minLength={8}
                 autoComplete="new-password"
               />
-              <div className="space-y-2">
-                <div ref={captchaContainerRef} />
-                <p className="text-xs text-[var(--muted)]">Complete captcha to create a new account.</p>
-              </div>
             </>
           )}
 
@@ -271,12 +194,6 @@ export default function LoginPage() {
           <Link href="/" className="underline">{t("login.backHome")}</Link>
         </p>
       </section>
-
-      <Script
-        src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
-        strategy="afterInteractive"
-        onLoad={() => setCaptchaScriptLoaded(true)}
-      />
     </main>
   );
 }

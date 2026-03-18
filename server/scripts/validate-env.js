@@ -7,22 +7,11 @@ const requiredAlways = [
   "CORS_ORIGIN",
 ];
 
-const requiredWhenTurnstileEnabled = ["TURNSTILE_SECRET_KEY"];
-
 const missing = [];
 
 for (const key of requiredAlways) {
   if (!process.env[key] || String(process.env[key]).trim() === "") {
     missing.push(key);
-  }
-}
-
-const turnstileEnabled = String(process.env.TURNSTILE_VERIFY_ENABLED || "true").toLowerCase() === "true";
-if (turnstileEnabled) {
-  for (const key of requiredWhenTurnstileEnabled) {
-    if (!process.env[key] || String(process.env[key]).trim() === "") {
-      missing.push(key);
-    }
   }
 }
 

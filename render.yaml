@@ -17,7 +17,3 @@ services:
         sync: false
       - key: CORS_ORIGIN
         sync: false
-      - key: TURNSTILE_SECRET_KEY
-        sync: false
-      - key: TURNSTILE_VERIFY_ENABLED
-        value: "true"

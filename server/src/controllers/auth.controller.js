@@ -6,7 +6,6 @@ import { AuditAction, logAuditEvent } from "../utils/audit.js";
 import { normalizeMobileNumber, parseAdminSecretCode } from "../utils/admin-access.js";
 import { isOwnerMobile } from "../utils/admin-access.js";
 import { hashPassword, verifyPassword } from "../utils/password.js";
-import { verifyTurnstileToken } from "../utils/captcha.js";
 import { isDemoMode, getDemoUser, setDemoUser, updateDemoUser } from "../utils/demo.js";
 import { generateAndSendOtp, verifyOtp, clearOtp } from "../utils/otp.js";
 
@@ -18,7 +17,6 @@ const registerWithPasswordSchema = z.object({
   identifier: z.string().min(10),
   password: z.string().min(8),
   confirmPassword: z.string().min(8),
-  captchaToken: z.string().min(10),
 }).refine((value) => value.password === value.confirmPassword, {
   message: "Password and confirm password must match",
   path: ["confirmPassword"],
@@ -97,12 +95,6 @@ export async function registerWithPassword(req, res) {
 
   const payload = parsedPayload.data;
   const normalizedIdentifier = normalizeMobileNumber(payload.identifier);
-
-  const captchaResult = await verifyTurnstileToken(payload.captchaToken, req.ip);
-
-  if (!captchaResult.success) {
-    return res.status(400).json({ message: captchaResult.message || "Captcha verification failed" });
-  }
 
   if (!/^\+[1-9]\d{9,14}$/.test(normalizedIdentifier)) {
     return res.status(400).json({ message: "Enter a valid phone number in +91XXXXXXXXXX format." });
