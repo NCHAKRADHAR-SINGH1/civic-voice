@@ -107,12 +107,20 @@ export default function LoginPage() {
       }
 
       if (mode === "register") {
+        const formElement = e.currentTarget as HTMLFormElement;
+        const fallbackToken = String(new FormData(formElement).get("cf-turnstile-response") || "").trim();
+        const effectiveCaptchaToken = (captchaToken || fallbackToken).trim();
+
         if (!turnstileSiteKey) {
           throw new Error("Captcha is not configured for signup.");
         }
 
-        if (!captchaToken) {
+        if (!effectiveCaptchaToken) {
           throw new Error("Please complete captcha before creating account.");
+        }
+
+        if (!captchaToken && effectiveCaptchaToken) {
+          setCaptchaToken(effectiveCaptchaToken);
         }
       }
 
@@ -121,7 +129,12 @@ export default function LoginPage() {
         body: {
           identifier: normalizedIdentifier,
           password,
-          ...(mode === "register" ? { confirmPassword, captchaToken } : {}),
+          ...(mode === "register"
+            ? {
+              confirmPassword,
+              captchaToken: (captchaToken || String(new FormData(e.currentTarget as HTMLFormElement).get("cf-turnstile-response") || "")).trim(),
+            }
+            : {}),
         },
       });
 
