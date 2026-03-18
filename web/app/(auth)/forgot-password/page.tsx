@@ -82,8 +82,8 @@ export default function ForgotPasswordPage() {
     setSuccessMessage("");
 
     try {
-      // Validate captcha
-      if (!captchaToken) {
+      // Validate captcha (only if site key is configured)
+      if (recaptchaSiteKey && !captchaToken) {
         throw new Error("Please complete the reCAPTCHA verification.");
       }
 

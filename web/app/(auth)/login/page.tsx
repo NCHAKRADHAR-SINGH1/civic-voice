@@ -100,8 +100,8 @@ export default function LoginPage() {
         throw new Error("Password and confirm password must match.");
       }
 
-      // Validate captcha for registration
-      if (mode === "register" && !captchaToken) {
+      // Validate captcha for registration (only if site key is configured)
+      if (mode === "register" && recaptchaSiteKey && !captchaToken) {
         throw new Error("Please complete the reCAPTCHA verification.");
       }
 
