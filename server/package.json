@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
+    "validate:env": "node scripts/validate-env.js",
+    "predeploy": "npm run validate:env && npm run prisma:generate && npm run prisma:deploy",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",

@@ -1,18 +1,18 @@
 # Civic Voice
 
-A modern civic issue reporting platform where citizens can authenticate using mobile OTP, set a primary location, report local issues, upvote, comment, and track moderation status.
+A modern civic issue reporting platform where citizens can authenticate using mobile number + password, set a primary location, report local issues, upvote, comment, and track moderation status.
 
 ## Tech Stack
 
 - Frontend: Next.js + React + TailwindCSS
 - Backend: Node.js + Express + Prisma
 - Database: PostgreSQL
-- Authentication: mobile OTP with HttpOnly session cookie
+- Authentication: mobile number + password with HttpOnly session cookie
 - Image Storage: Cloudinary (with local file fallback)
 
 ## Features
 
-- OTP auth via mobile number
+- Password auth via mobile number
 - Location selection: Country -> State -> District -> City/Village
 - Location change restricted to once every 30 days
 - Civic issue feed filtered by user location
@@ -50,8 +50,8 @@ A modern civic issue reporting platform where citizens can authenticate using mo
 
 ## Seeded Accounts
 
-- Admin via mobile OTP: `9999999999` (configurable via `SEED_ADMIN_MOBILE`)
-- Citizen demo via mobile OTP: `8888888888`
+- Owner and admin access are configured through runtime flows and env settings.
+- Use signup/login from the UI to create citizen accounts.
 
 ## Database Notes
 
@@ -81,7 +81,9 @@ A modern civic issue reporting platform where citizens can authenticate using mo
 ## Default API Endpoints
 
 - Auth:
-  - `POST /api/auth/verify-otp`
+   - `POST /api/auth/register-password`
+   - `POST /api/auth/login-password`
+   - `POST /api/auth/reset-password-otp`
    - `GET /api/auth/session`
    - `POST /api/auth/logout`
 - Location:
@@ -101,13 +103,13 @@ A modern civic issue reporting platform where citizens can authenticate using mo
 
 ## Security Notes
 
-- Phone OTP challenge and verification are handled by Firebase Phone Auth
+- Password signup/login is handled by the backend; OTP is used only for forgot-password reset
 - JWT-based authenticated routes use HttpOnly cookies
 - Helmet, scoped CORS, and rate limiting enabled
 - Uploads accept only JPEG, PNG, and WebP images up to 5 MB
 - Unique database constraints prevent duplicate upvotes and duplicate spam reports
 
-## Real SMS OTP Setup (Firebase)
+## Firebase OTP Setup (Forgot Password Only)
 
 1. Create a Firebase project and enable Phone Authentication.
 2. In Firebase Console, add allowed domains for local/dev usage.
@@ -130,8 +132,8 @@ Localhost testing:
 - Use that exact phone number on the login page and enter the configured code; no real SMS will be sent
 
 Behavior:
-- OTP challenge/verification is handled by Firebase client SDK.
-- Backend verifies Firebase ID token and creates the Civic Voice session cookie.
+- OTP challenge/verification is used only during forgot-password flow.
+- Backend verifies Firebase ID token and allows password reset for that mobile number.
 
 Required backend env:
 - `JWT_SECRET` must be set
@@ -190,11 +192,12 @@ Required backend env:
 - `AUTH_COOKIE_SAME_SITE="none"` when frontend and backend are on different subdomains and you need cross-site cookies
 - `AUTH_COOKIE_SECURE="true"` in production
 - `AUTH_COOKIE_DOMAIN=".example.com"` when sharing cookie scope across subdomains
-- `ADMIN_ASSIGNMENTS="+919999999999|mumbai-admin-2026|India|Maharashtra|Mumbai|Mumbai"`
 - `OWNER_ALLOWED_MOBILES="+918888888888"`
 - `FIREBASE_PROJECT_ID="..."`
 - `FIREBASE_CLIENT_EMAIL="..."`
 - `FIREBASE_PRIVATE_KEY="..."`
+- `TURNSTILE_SECRET_KEY="..."`
+- `TURNSTILE_VERIFY_ENABLED="true"`
 - `CLOUDINARY_CLOUD_NAME="..."`
 - `CLOUDINARY_API_KEY="..."`
 - `CLOUDINARY_API_SECRET="..."`
@@ -222,6 +225,8 @@ Render backend:
    - `FIREBASE_PROJECT_ID=...`
    - `FIREBASE_CLIENT_EMAIL=...`
    - `FIREBASE_PRIVATE_KEY=...`
+   - `TURNSTILE_SECRET_KEY=...`
+   - `TURNSTILE_VERIFY_ENABLED=true`
    - `CLOUDINARY_CLOUD_NAME=...`
    - `CLOUDINARY_API_KEY=...`
    - `CLOUDINARY_API_SECRET=...`
@@ -241,6 +246,7 @@ Vercel frontend:
    - `NEXT_PUBLIC_FIREBASE_APP_ID=...`
    - `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=...`
    - `NEXT_PUBLIC_FIREBASE_USE_TEST_MODE=false`
+   - `NEXT_PUBLIC_TURNSTILE_SITE_KEY=...`
 5. Add the deployed Vercel domain to Firebase Authorized Domains.
 
 Cross-site auth note:
@@ -258,7 +264,7 @@ Production checklist:
 3. Set `NEXT_PUBLIC_FIREBASE_USE_TEST_MODE=false` in deployment.
 4. Configure Cloudinary for persistent uploads. Do not rely on local disk uploads in production.
 5. Keep owner numbers only in `OWNER_ALLOWED_MOBILES`.
-6. Keep admin numbers only in `ADMIN_ASSIGNMENTS`.
+6. Share admin secret code using format `civic_service_state_district_city`.
 7. Run backend migrations with `npm run prisma:deploy` before starting the API.
 8. Verify one Citizen login, one Admin login, and one Owner login after deploy.
 
@@ -268,9 +274,9 @@ Suggested platform mapping:
 - Fly.io / self-hosted VM: deploy both images separately and point them at a managed PostgreSQL instance
 
 Role behavior in production:
-- Any phone number can authenticate with Firebase OTP.
+- Any phone number can sign up/login with password.
 - A user becomes `OWNER` only if the normalized number appears in `OWNER_ALLOWED_MOBILES`.
-- A user can become `ADMIN` only if the normalized number appears in `ADMIN_ASSIGNMENTS` and the matching invite code is entered on the role page.
+- A user can become `ADMIN` only by entering a valid secret code in the role page using format `civic_service_state_district_city`.
 - All other authenticated users use the Citizen flow.
 
 ## Optional Production Additions

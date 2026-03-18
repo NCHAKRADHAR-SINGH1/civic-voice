@@ -49,16 +49,16 @@ export default function HomePage() {
           <p className="mb-2 text-xs uppercase tracking-[0.24em] text-[var(--muted)]">How Sign-In Works</p>
           <div className="space-y-4 text-sm text-[var(--muted)]">
             <div>
-              <p className="font-semibold text-[var(--text)]">1. Verify phone number</p>
-              <p>Enter your mobile number and complete OTP verification first.</p>
+              <p className="font-semibold text-[var(--text)]">1. Login with mobile and password</p>
+              <p>Enter your mobile number and password to continue.</p>
             </div>
             <div>
               <p className="font-semibold text-[var(--text)]">2. Select your role</p>
-              <p>After OTP, continue as Citizen or use approved Administrator access.</p>
+              <p>Continue as Citizen or use approved Administrator access.</p>
             </div>
             <div>
               <p className="font-semibold text-[var(--text)]">3. Use admin code only if needed</p>
-              <p>Admin invite codes are entered on the role screen, not in the OTP field.</p>
+              <p>Admin invite codes are entered on the role screen.</p>
             </div>
           </div>
         </section>

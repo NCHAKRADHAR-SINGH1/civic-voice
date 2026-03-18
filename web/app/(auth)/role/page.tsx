@@ -8,6 +8,8 @@ import { apiFetch } from "@/lib/api";
 import { useSession } from "@/components/session-utils";
 import { containerStagger, fadeUp } from "@/components/motion-presets";
 
+const FORCE_ROLE_SELECTION_KEY = "civic_voice_force_role_selection";
+
 export default function RolePage() {
   const router = useRouter();
   const { user, loading, refreshSession } = useSession();
@@ -15,6 +17,15 @@ export default function RolePage() {
   const [error, setError] = useState("");
   const [showAdminCode, setShowAdminCode] = useState(false);
   const [adminCode, setAdminCode] = useState("");
+  const [forceRoleSelection, setForceRoleSelection] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    setForceRoleSelection(localStorage.getItem(FORCE_ROLE_SELECTION_KEY) === "true");
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -27,10 +38,10 @@ export default function RolePage() {
       return;
     }
 
-    if (user?.role) {
-      router.push("/location");
+    if (user?.role && !forceRoleSelection) {
+      router.push("/dashboard");
     }
-  }, [loading, router, user]);
+  }, [forceRoleSelection, loading, router, user]);
 
   const submitRole = async (role: "CITIZEN" | "ADMIN", event: FormEvent) => {
     event.preventDefault();
@@ -52,8 +63,11 @@ export default function RolePage() {
         },
       });
 
+      localStorage.removeItem(FORCE_ROLE_SELECTION_KEY);
+      setForceRoleSelection(false);
+
       await refreshSession();
-      router.push("/location");
+      router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to update role");
     } finally {
@@ -73,12 +87,12 @@ export default function RolePage() {
 
   return (
     <main className="mx-auto max-w-3xl">
-      <motion.section className="hero-panel space-y-6" variants={containerStagger} initial="hidden" animate="visible">
+      <motion.section className="hero-panel space-y-6" variants={containerStagger} initial="hidden" animate="show">
         <motion.div variants={fadeUp} className="text-center">
           <p className="eyebrow justify-center">Access Setup</p>
           <h2 className="mb-2 text-2xl font-bold">Welcome!</h2>
-          <p className="text-[var(--muted)]">Tell us your role so we can customize your experience.</p>
-          <p className="mt-2 text-xs text-[var(--muted)]">Phone OTP verification is already complete. Select your role below.</p>
+          <p className="text-[var(--muted)]">Choose your role to continue.</p>
+          <p className="mt-2 text-xs text-[var(--muted)]">Citizen goes directly to dashboard. Admin requires a secret code.</p>
         </motion.div>
 
         {!showAdminCode ? (
@@ -92,30 +106,24 @@ export default function RolePage() {
                 <Users className="mt-1 h-6 w-6 shrink-0 text-blue-600" />
                 <div>
                   <h3 className="font-semibold">Citizen</h3>
-                  <p className="text-sm text-[var(--muted)]">Report civic issues, upvote problems in your area, and see resolutions.</p>
+                  <p className="text-sm text-[var(--muted)]">Continue to dashboard and use citizen features.</p>
                 </div>
               </div>
             </button>
 
-            {user.canRequestAdminRole ? (
-              <button
-                onClick={(event) => submitRole("ADMIN", event)}
-                disabled={selecting}
-                className="group block w-full rounded-[1.5rem] border border-black/5 bg-white/45 p-5 text-left transition-all hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-50/70 dark:border-white/10 dark:bg-white/5 dark:hover:bg-green-950/60"
-              >
-                <div className="flex items-start gap-3">
-                  <Shield className="mt-1 h-6 w-6 shrink-0 text-green-600" />
-                  <div>
-                    <h3 className="font-semibold">Government / Administrator</h3>
-                    <p className="text-sm text-[var(--muted)]">Review and resolve civic issues only within your assigned location.</p>
-                  </div>
+            <button
+              onClick={(event) => submitRole("ADMIN", event)}
+              disabled={selecting}
+              className="group block w-full rounded-[1.5rem] border border-black/5 bg-white/45 p-5 text-left transition-all hover:-translate-y-1 hover:border-green-500/50 hover:bg-green-50/70 dark:border-white/10 dark:bg-white/5 dark:hover:bg-green-950/60"
+            >
+              <div className="flex items-start gap-3">
+                <Shield className="mt-1 h-6 w-6 shrink-0 text-green-600" />
+                <div>
+                  <h3 className="font-semibold">Government / Administrator</h3>
+                  <p className="text-sm text-[var(--muted)]">Enter civic_service secret code to activate admin role for your location.</p>
                 </div>
-              </button>
-            ) : (
-              <div className="rounded-[1.5rem] border border-black/10 bg-black/5 p-5 text-sm text-[var(--muted)] dark:border-white/10 dark:bg-white/5">
-                Administrator access is enabled only for approved mobile numbers issued by the project owner.
               </div>
-            )}
+            </button>
           </motion.div>
         ) : (
           <motion.form variants={fadeUp} onSubmit={(event) => submitRole("ADMIN", event)} className="space-y-4">
@@ -124,20 +132,20 @@ export default function RolePage() {
               <p className="text-sm font-medium text-green-800 dark:text-green-200">Admin verification required</p>
             </div>
 
-            <p className="text-xs text-[var(--muted)]">Enter the admin invite code here. Do not enter OTP in this field.</p>
+            <p className="text-xs text-[var(--muted)]">Use code format: civic_service_state_district_city</p>
 
             <div>
-              <label className="mb-1 block text-sm font-medium">Enter your admin invite code</label>
+              <label className="mb-1 block text-sm font-medium">Enter your admin secret code</label>
               <input
                 className="input"
                 type="password"
-                placeholder="Admin invite code"
+                placeholder="civic_service_telangana_hyderabad_gachibowli"
                 value={adminCode}
                 onChange={(event) => setAdminCode(event.target.value)}
                 autoFocus
                 required
               />
-              <p className="mt-1 text-xs text-[var(--muted)]">This code is issued only to approved administrators.</p>
+              <p className="mt-1 text-xs text-[var(--muted)]">The location in this code becomes your admin area.</p>
             </div>
 
             <div className="flex gap-2">

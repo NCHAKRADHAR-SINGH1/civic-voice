@@ -16,38 +16,54 @@ export function normalizeMobileNumber(identifier = "") {
   return String(identifier).replace(/\s/g, "");
 }
 
-export function getAdminAssignments() {
-  return (process.env.ADMIN_ASSIGNMENTS || "")
-    .split(";")
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .map((entry) => {
-      const [mobile, inviteCode, country, state, district, cityVillage] = entry.split("|").map((value) => value.trim());
-      return {
-        mobile: normalizeMobileNumber(mobile),
-        inviteCode,
-        location: {
-          country,
-          state,
-          district,
-          cityVillage,
-        },
-      };
-    })
-    .filter((entry) => entry.mobile && entry.inviteCode && entry.location.country && entry.location.state && entry.location.district && entry.location.cityVillage);
+function toTitleCase(value = "") {
+  return value
+    .split(" ")
+    .map((token) => token.charAt(0).toUpperCase() + token.slice(1).toLowerCase())
+    .join(" ")
+    .trim();
 }
 
-export function getAdminAssignmentByMobile(mobile) {
-  if (!mobile) {
+export function parseAdminSecretCode(adminCode = "") {
+  const normalizedCode = String(adminCode).trim();
+  const prefix = "civic_service_";
+
+  if (!normalizedCode.toLowerCase().startsWith(prefix)) {
     return null;
   }
 
-  const normalizedMobile = normalizeMobileNumber(mobile);
-  return getAdminAssignments().find((entry) => entry.mobile === normalizedMobile) || null;
-}
+  const encodedLocation = normalizedCode.slice(prefix.length).trim();
 
-export function canUserRequestAdminRole(mobile) {
-  return Boolean(getAdminAssignmentByMobile(mobile));
+  if (!encodedLocation || !/^[a-zA-Z0-9_-]{3,120}$/.test(encodedLocation)) {
+    return null;
+  }
+
+  const parts = encodedLocation
+    .split("_")
+    .map((part) => part.replace(/-/g, " ").trim())
+    .filter(Boolean);
+
+  if (!parts.length) {
+    return null;
+  }
+
+  const state = toTitleCase(parts[0]);
+  const district = toTitleCase(parts[1] || parts[0]);
+  const cityVillage = toTitleCase(parts.slice(2).join(" ") || parts[parts.length - 1]);
+
+  if (!state || !district || !cityVillage) {
+    return null;
+  }
+
+  return {
+    locationCode: encodedLocation,
+    location: {
+      country: "India",
+      state,
+      district,
+      cityVillage,
+    },
+  };
 }
 
 export function getAllowedOwnerMobiles() {

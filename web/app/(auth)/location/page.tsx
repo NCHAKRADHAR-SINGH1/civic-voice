@@ -10,6 +10,8 @@ import { IssueCard } from "@/components/issue-card";
 import { containerStagger, fadeUp } from "@/components/motion-presets";
 import { useI18n } from "@/components/i18n-provider";
 
+const FORCE_ROLE_SELECTION_KEY = "civic_voice_force_role_selection";
+
 type DistrictLookupResult = {
   success: boolean;
   data?: {
@@ -226,22 +228,8 @@ export default function LocationPage() {
 
       if (response.user.location) {
         await refreshSession();
-        
-        // Fetch existing issues for this location
-        setLoadingIssues(true);
-        try {
-          const issuesData = await apiFetch<Issue[]>(
-            `/issues/by-location?state=${encodeURIComponent(stateValue)}&district=${encodeURIComponent(district)}&cityVillage=${encodeURIComponent(cityVillage.trim())}`
-          );
-          setIssues(issuesData);
-          setShowingIssues(true);
-        } catch (issuesErr) {
-          console.error("Failed to load issues:", issuesErr);
-          setIssues([]);
-          setShowingIssues(true);
-        } finally {
-          setLoadingIssues(false);
-        }
+        localStorage.setItem(FORCE_ROLE_SELECTION_KEY, "true");
+        router.push("/role");
       }
     } catch (err) {
       setError((err as Error).message);

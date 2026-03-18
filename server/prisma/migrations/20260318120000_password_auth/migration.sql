@@ -1,0 +1,4 @@
+ALTER TYPE "AuthMethod" ADD VALUE 'PASSWORD';
+
+ALTER TABLE "User"
+ADD COLUMN "passwordHash" TEXT;

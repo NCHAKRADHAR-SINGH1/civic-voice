@@ -155,7 +155,7 @@ export default function OwnerPage() {
               </div>
             );
           })}
-          {admins.length === 0 && <p className="text-sm text-[var(--muted)]">No admin assignments configured.</p>}
+          {admins.length === 0 && <p className="text-sm text-[var(--muted)]">No admin accounts found yet.</p>}
         </div>
       </motion.section>
 

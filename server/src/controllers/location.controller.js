@@ -2,7 +2,7 @@ import { z } from "zod";
 import prisma from "../utils/prisma.js";
 import { serializeUser } from "../utils/auth.js";
 import { AuditAction, logAuditEvent } from "../utils/audit.js";
-import { getAdminAssignmentByMobile } from "../utils/admin-access.js";
+import { isDemoMode, updateDemoUser } from "../utils/demo.js";
 
 const locationSchema = z.object({
   country: z.string().trim().min(2),
@@ -18,13 +18,12 @@ export async function updatePrimaryLocation(req, res) {
     (process.env.LOCATION_CHANGE_COOLDOWN_MONTHS ? Number(process.env.LOCATION_CHANGE_COOLDOWN_MONTHS) * 30 : 30)
   );
   const user = req.user;
-  const adminAssignment = user.role === "ADMIN" ? getAdminAssignmentByMobile(user.mobile) : null;
 
-  if (user.role === "ADMIN" && !adminAssignment) {
-    return res.status(403).json({ message: "Admin location assignment is missing" });
+  if (user.role === "ADMIN") {
+    return res.status(403).json({ message: "Admin location is managed by admin secret code" });
   }
 
-  const nextLocation = adminAssignment ? adminAssignment.location : payload;
+  const nextLocation = payload;
 
   if (user.locationUpdatedAt) {
     const nextAllowed = new Date(user.locationUpdatedAt);
@@ -37,13 +36,22 @@ export async function updatePrimaryLocation(req, res) {
     }
   }
 
-  const updated = await prisma.user.update({
-    where: { id: user.id },
-    data: {
+  const updated = isDemoMode()
+    ? updateDemoUser(user.mobile, {
       ...nextLocation,
       locationUpdatedAt: new Date(),
-    },
-  });
+    })
+    : await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        ...nextLocation,
+        locationUpdatedAt: new Date(),
+      },
+    });
+
+  if (!updated) {
+    return res.status(404).json({ message: "Unable to update primary location for current user" });
+  }
 
   await logAuditEvent({
     actor: updated,

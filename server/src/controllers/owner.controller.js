@@ -1,7 +1,8 @@
 import { z } from "zod";
 import prisma from "../utils/prisma.js";
 import { AuditAction, logAuditEvent } from "../utils/audit.js";
-import { getAdminAssignmentByMobile, getAdminAssignments, normalizeMobileNumber } from "../utils/admin-access.js";
+import { normalizeMobileNumber } from "../utils/admin-access.js";
+import { isDemoMode } from "../utils/demo.js";
 
 const auditLogQuerySchema = z.object({
   q: z.string().trim().max(120).optional(),
@@ -33,6 +34,10 @@ function parseDateBoundary(value, endOfDay = false) {
 }
 
 export async function listAuditLogs(req, res) {
+  if (isDemoMode()) {
+    return res.json([]);
+  }
+
   const query = auditLogQuerySchema.parse(req.query);
   const where = {};
 
@@ -89,16 +94,21 @@ export async function listAuditLogs(req, res) {
 }
 
 export async function listAdmins(_req, res) {
-  const assignments = getAdminAssignments();
+  if (isDemoMode()) {
+    return res.json([]);
+  }
+
   const users = await prisma.user.findMany({
     where: {
-      mobile: {
-        in: assignments.map((entry) => entry.mobile),
-      },
+      role: "ADMIN",
     },
+    orderBy: { updatedAt: "desc" },
     select: {
-      id: true,
       mobile: true,
+      country: true,
+      state: true,
+      district: true,
+      cityVillage: true,
       role: true,
       adminAccessDisabledAt: true,
       createdAt: true,
@@ -106,20 +116,22 @@ export async function listAdmins(_req, res) {
     },
   });
 
-  const userByMobile = new Map(users.map((user) => [normalizeMobileNumber(user.mobile || ""), user]));
-
-  const admins = assignments.map((entry) => {
-    const user = userByMobile.get(entry.mobile);
-    return {
-      mobile: entry.mobile,
-      location: entry.location,
-      hasAccount: Boolean(user),
-      role: user?.role || null,
-      adminAccessDisabledAt: user?.adminAccessDisabledAt || null,
-      createdAt: user?.createdAt || null,
-      updatedAt: user?.updatedAt || null,
-    };
-  });
+  const admins = users
+    .filter((user) => Boolean(user.mobile))
+    .map((user) => ({
+      mobile: normalizeMobileNumber(user.mobile),
+      location: {
+        country: user.country || "India",
+        state: user.state || "Not set",
+        district: user.district || "Not set",
+        cityVillage: user.cityVillage || "Not set",
+      },
+      hasAccount: true,
+      role: user.role || null,
+      adminAccessDisabledAt: user.adminAccessDisabledAt || null,
+      createdAt: user.createdAt || null,
+      updatedAt: user.updatedAt || null,
+    }));
 
   return res.json(admins);
 }
@@ -127,18 +139,16 @@ export async function listAdmins(_req, res) {
 export async function updateAdminAccess(req, res) {
   const payload = adminAccessSchema.parse(req.body);
   const normalizedMobile = normalizeMobileNumber(payload.mobile);
-  const assignment = getAdminAssignmentByMobile(normalizedMobile);
-
-  if (!assignment) {
-    return res.status(404).json({ message: "Admin assignment not found for this mobile" });
-  }
 
   const user = await prisma.user.findFirst({
-    where: { mobile: normalizedMobile },
+    where: {
+      mobile: normalizedMobile,
+      role: "ADMIN",
+    },
   });
 
   if (!user) {
-    return res.status(404).json({ message: "Admin account not onboarded yet" });
+    return res.status(404).json({ message: "Admin account not found for this mobile" });
   }
 
   const updated = await prisma.user.update({

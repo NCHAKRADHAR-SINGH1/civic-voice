@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import prisma from "../utils/prisma.js";
 import { AUTH_COOKIE_NAME, getJwtSecret } from "../utils/auth.js";
+import { getDemoUserById, isDemoMode } from "../utils/demo.js";
 
 function getCookieValue(cookieHeader, name) {
   if (!cookieHeader) {
@@ -34,7 +35,9 @@ export async function requireAuth(req, res, next) {
 
   try {
     const payload = jwt.verify(token, getJwtSecret());
-    const user = await prisma.user.findUnique({ where: { id: payload.sub } });
+    const user = isDemoMode()
+      ? getDemoUserById(payload.sub)
+      : await prisma.user.findUnique({ where: { id: payload.sub } });
 
     if (!user) {
       return res.status(401).json({ message: "Invalid auth token" });
