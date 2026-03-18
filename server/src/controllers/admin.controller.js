@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import prisma from "../utils/prisma.js";
 import { AuditAction, logAuditEvent } from "../utils/audit.js";
@@ -10,16 +11,21 @@ const resolveSchema = z.object({
   resolutionProofImages: z.array(z.string().url()).default([]),
 });
 
+function normalizeLocationValue(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
 function getAdminLocationFilter(admin) {
   if (!admin.country || !admin.state || !admin.district || !admin.cityVillage) {
     return null;
   }
 
+  // Use case-insensitive matching for locations
   return {
-    country: admin.country,
-    state: admin.state,
-    district: admin.district,
-    cityVillage: admin.cityVillage,
+    country: { equals: normalizeLocationValue(admin.country), mode: Prisma.QueryMode.insensitive },
+    state: { equals: normalizeLocationValue(admin.state), mode: Prisma.QueryMode.insensitive },
+    district: { equals: normalizeLocationValue(admin.district), mode: Prisma.QueryMode.insensitive },
+    cityVillage: { equals: normalizeLocationValue(admin.cityVillage), mode: Prisma.QueryMode.insensitive },
   };
 }
 
