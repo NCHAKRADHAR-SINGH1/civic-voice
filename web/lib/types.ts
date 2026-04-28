@@ -72,6 +72,11 @@ export type Issue = {
   resolutionProofImages?: string[];
   resolvedAt?: string | null;
   createdAt: string;
+  userId: string;
+  user: {
+    id: string;
+    mobile?: string | null;
+  };
   _count: {
     upvotes: number;
     comments: number;

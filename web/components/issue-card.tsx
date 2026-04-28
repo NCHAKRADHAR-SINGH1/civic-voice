@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { Flag, MessageCircle } from "lucide-react";
+import { Flag, MessageCircle, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Issue } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
@@ -10,10 +10,12 @@ import { useI18n } from "@/components/i18n-provider";
 
 type Props = {
   issue: Issue;
+  currentUserId?: string;
   onRefresh: () => Promise<void>;
+  onIssueDeleted?: () => void;
 };
 
-export function IssueCard({ issue, onRefresh }: Props) {
+export function IssueCard({ issue, currentUserId, onRefresh, onIssueDeleted }: Props) {
   const { t, formatDateTime } = useI18n();
   const [comment, setComment] = useState("");
   const [commentImage, setCommentImage] = useState<File | null>(null);
@@ -21,6 +23,7 @@ export function IssueCard({ issue, onRefresh }: Props) {
   const [loading, setLoading] = useState(false);
   const [actionError, setActionError] = useState("");
   const canVote = issue.status !== "RESOLVED";
+  const isCreator = currentUserId === issue.userId;
 
   const upvote = async () => {
     if (!canVote) {
@@ -92,6 +95,24 @@ export function IssueCard({ issue, onRefresh }: Props) {
     }
   };
 
+  const deleteIssue = async () => {
+    if (!confirm("Are you sure you want to delete this issue? This action cannot be undone.")) {
+      return;
+    }
+
+    setActionError("");
+    setLoading(true);
+    try {
+      await apiFetch(`/issues/${issue.id}`, { method: "DELETE" });
+      onIssueDeleted?.();
+      await onRefresh();
+    } catch (err) {
+      setActionError((err as Error).message || "Failed to delete issue");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <motion.article
       className="card space-y-4"
@@ -158,6 +179,17 @@ export function IssueCard({ issue, onRefresh }: Props) {
         <span className="inline-flex items-center gap-1 text-[var(--muted)]">
           <MessageCircle size={16} /> {issue._count.comments}
         </span>
+        {isCreator && (
+          <button
+            className="btn-secondary inline-flex items-center gap-1 ml-auto text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+            type="button"
+            disabled={loading}
+            onClick={deleteIssue}
+            title="Delete this issue"
+          >
+            <Trash2 size={14} /> Delete
+          </button>
+        )}
         <span className="text-xs text-[var(--muted)]">{t("issue.posted")} {formatDateTime(issue.createdAt)}</span>
       </div>
 

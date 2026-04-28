@@ -336,3 +336,37 @@ export async function trendingIssues(req, res) {
 
   return res.json(issues);
 }
+
+export async function deleteIssue(req, res) {
+  const { id } = req.params;
+  const user = req.user;
+
+  const issue = await prisma.problem.findUnique({ where: { id } });
+
+  if (!issue) {
+    return res.status(404).json({ message: "Issue not found" });
+  }
+
+  // Only issue creator can delete
+  if (issue.userId !== user.id) {
+    return res.status(403).json({ message: "Only issue creator can delete" });
+  }
+
+  // Delete related records first
+  await prisma.upvote.deleteMany({ where: { problemId: id } });
+  await prisma.comment.deleteMany({ where: { problemId: id } });
+  await prisma.spamReport.deleteMany({ where: { problemId: id } });
+
+  // Delete the issue
+  await prisma.problem.delete({ where: { id } });
+
+  await logAuditEvent({
+    actor: user,
+    action: AuditAction.ISSUE_CREATED,
+    entityType: "PROBLEM",
+    entityId: id,
+    summary: `${user.mobile || "Unknown user"} deleted issue "${issue.title}"`,
+  });
+
+  return res.json({ message: "Issue deleted successfully" });
+}

@@ -366,7 +366,7 @@ export default function LocationPage() {
             >
               {issues.map((issue, idx) => (
                 <motion.div key={issue.id} variants={fadeUp} custom={idx}>
-                  <IssueCard issue={issue} onRefresh={async () => {}} />
+                  <IssueCard issue={issue} currentUserId={user?.id} onRefresh={async () => {}} />
                 </motion.div>
               ))}
               

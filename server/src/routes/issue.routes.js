@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   addComment,
   createIssue,
+  deleteIssue,
   getIssuesByLocation,
   listIssues,
   reportSpam,
@@ -20,5 +21,6 @@ router.post("/", requireAuth, asyncHandler(createIssue));
 router.post("/:id/upvote", requireAuth, asyncHandler(upvoteIssue));
 router.post("/:id/comments", requireAuth, asyncHandler(addComment));
 router.post("/:id/report", requireAuth, asyncHandler(reportSpam));
+router.delete("/:id", requireAuth, asyncHandler(deleteIssue));
 
 export default router;

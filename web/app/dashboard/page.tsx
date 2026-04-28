@@ -188,7 +188,7 @@ export default function DashboardPage() {
         <motion.div className="space-y-4" variants={containerStagger}>
           <AnimatePresence mode="popLayout">
             {issues.map((issue) => (
-              <IssueCard key={issue.id} issue={issue} onRefresh={fetchIssues} />
+              <IssueCard key={issue.id} issue={issue} currentUserId={user.id} onRefresh={fetchIssues} />
             ))}
           </AnimatePresence>
           {!loading && issues.length === 0 && <p className="text-sm text-[var(--muted)]">{t("dashboard.noIssues")}</p>}
