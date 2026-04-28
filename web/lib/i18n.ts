@@ -1,4 +1,4 @@
-export const locales = ["en", "hi", "ta"] as const;
+export const locales = ["en", "hi", "ta", "te"] as const;
 
 export type Locale = (typeof locales)[number];
 
@@ -10,12 +10,14 @@ export const localeToIntl: Record<Locale, string> = {
   en: "en-IN",
   hi: "hi-IN",
   ta: "ta-IN",
+  te: "te-IN",
 };
 
 export const localeLabels: Record<Locale, string> = {
   en: "English",
   hi: "Hindi",
   ta: "Tamil",
+  te: "Telugu",
 };
 
 export const translations = {
@@ -285,6 +287,95 @@ export const translations = {
     "issue.reportReason": "நகல்/ஸ்பாம் புகார் காரணம்",
     "issue.report": "புகார்",
     "issue.defaultReportReason": "இது நகல் அல்லது ஸ்பாம் ஆக இருக்கலாம்",
+  },
+  te: {
+    "layout.communityNetwork": "కమ్యూనిటీ నెట్‌వర్క్",
+    "layout.appName": "సివిక్ వాయిస్",
+    "theme.toggleAria": "థీమ్‌ను మార్చండి",
+    "theme.light": "లైట్",
+    "theme.dark": "డార్క్",
+    "language.select": "భాష",
+
+    "home.platform": "బహిరంగ జవాబుదారీ ప్లాట్‌ఫాం",
+    "home.hero": "స్థానిక సమస్యలను నివేదించండి. పొలుసులను కూడా చేర్చుకోండి. పురోగతిని ట్రాక్ చేయండి.",
+    "home.description": "సివిక్ వాయిస్ నివాసులను వారి ఖచ్చిత ప్రాంతంలో సమస్యలను నివేదించడానికి, ఆర్జెంట్‌సీని ఓటు వేయడానికి మరియు రోడ్లు, కాలువలు, విద్యుత్, నీరు మరియు పరిశుద్ధతకు సంబంధించిన సమస్యలకు ప్రజా దృష్టి తీసుకురావడానికి సహాయం చేస్తుంది.",
+    "home.getStarted": "ప్రారంభించండి",
+    "home.exploreFeed": "ఫీడ్ అన్వేషించండి",
+    "home.builtForScale": "స్కేల్‌కు నిర్మితం",
+    "home.featureOtp": "పాస్‌వర్డ్-ఆధారిత ఆన్‌బోర్డింగ్",
+    "home.featureLocation": "లొకేషన్-లాక్డ్ సమస్య ఫీడ్",
+    "home.featureUpvote": "డూప్లికేట్ అప్‌వోట్ నిరోధం",
+    "home.featureReport": "స్పామ్ మరియు డూప్లికేట్ నివేదన",
+    "home.featureAdmin": "ఆడ్మిన్ మిడియేషన్ కన్సోల్",
+
+    "login.title": "లాగిన్ / సైన్ అప్",
+    "login.subtitle": "కొనసాగించడానికి మీ మొబైల్ నంబర్ మరియు పాస్‌వర్డ్‌ను ఉపయోగించండి.",
+    "login.aadhaarOtp": "మొబైల్ OTP",
+    "login.mobileOtp": "మొబైల్ OTP",
+    "login.aadhaarPlaceholder": "మొబైల్ నంబర్",
+    "login.mobilePlaceholder": "మొబైల్ నంబర్",
+    "login.enterOtp": "OTP ను నమోదు చేయండి",
+    "login.devOtp": "డెవ్ OTP",
+    "login.pleaseWait": "దయచేసి ఎదురుచూడండి...",
+    "login.verifyOtp": "OTP ను ధృవీకరించండి",
+    "login.sendOtp": "OTP పంపండి",
+    "login.aadhaarMasked": "మీ సెషన్ సురక్షితమైన కుకీ ద్వారా రక్షించబడింది.",
+    "login.backHome": "హోమ్‌కు తిరిగి వెళ్లండి",
+
+    "location.title": "ప్రాథమిక స్థానాన్ని సెట్ చేయండి",
+    "location.subtitle": "మీరు 30 రోజులకు ఒకసారి మాత్రమే స్థానాన్ని అప్‌డేట్ చేయవచ్చు.",
+    "location.india": "భారతదేశం",
+    "location.loadingAll": "భారతదేశం యొక్క అన్ని రాష్ట్రాలు మరియు జిల్లాలు లోడ్ అవుతున్నాయి...",
+    "location.loadingVillage": "గ్రామాలు లోడ్ అవుతున్నాయి...",
+    "location.typeVillage": "గ్రామం/నగరాన్ని టైప్ చేయండి",
+    "location.searchState": "రాష్ట్రాన్ని సెర్చ్ చేయండి",
+    "location.searchDistrict": "జిల్లాను సెర్చ్ చేయండి",
+    "location.loadingDistrictVillages": "ఎంచుకున్న జిల్లా కోసం గ్రామాలు లోడ్ అవుతున్నాయి...",
+    "location.completeFields": "దయచేసి అన్ని స్థానం ఫీల్డ్‌లను పూర్తి చేయండి.",
+    "location.saving": "సేవ్ చేస్తున్నాం...",
+    "location.save": "స్థానాన్ని సేవ్ చేయండి",
+
+    "dashboard.loadingSession": "సెషన్ లోడ్ అవుతున్నాయి...",
+    "dashboard.feedTitle": "స్థానిక సమస్యల ఫీడ్",
+    "dashboard.changeLocation": "స్థానాన్ని మార్చండి",
+    "dashboard.admin": "ఆడ్మిన్",
+    "dashboard.logout": "లాగ్‌అవుట్",
+    "dashboard.mostUpvoted": "ఎక్కువ ఉపవోట్",
+    "dashboard.mostRecent": "ఇటీవలి",
+    "dashboard.allCategories": "అన్ని వర్గాలు",
+    "dashboard.search": "శీర్షిక/వివరణ సెర్చ్",
+    "dashboard.apply": "వర్తించండి",
+    "dashboard.createIssue": "సివిక్ సమస్య సృష్టించండి",
+    "dashboard.title": "శీర్షిక",
+    "dashboard.description": "వివరణ",
+    "dashboard.departmentOptional": "విభాగం ట్యాగ్ (ఐచ్ఛికం)",
+    "dashboard.postIssue": "సమస్య పోస్ట్ చేయండి",
+    "dashboard.loadingIssues": "సమస్యలు లోడ్ అవుతున్నాయి...",
+    "dashboard.noIssues": "మీ స్థానంలో ఇంకా సమస్యలు లేవు.",
+    "dashboard.trending": "సమీపంలో ట్రెండింగ్",
+    "dashboard.noTrends": "ఇంకా ట్రెండ్‌లు లేవు.",
+    "dashboard.primaryLocation": "ప్రాథమిక స్థానం",
+    "dashboard.notSet": "సెట్ చేయబడలేదు",
+    "dashboard.statusTracking": "స్థితి ట్రాకింగ్",
+    "dashboard.statusFlow": "నివేదించబడింది -> ప్రోగతిలో -> పరిష్కారం",
+    "dashboard.upvotes": "అపవోట్‌లు",
+
+    "admin.loading": "లోడ్ అవుతున్నాయి...",
+    "admin.title": "ఆడ్మిన్ మిడియేషన్ డ్యాష్‌బోర్డ్",
+    "admin.backToFeed": "ఫీడ్‌కు తిరిగి వెళ్లండి",
+    "admin.reports": "నివేదనలు",
+    "admin.reported": "నివేదించబడింది",
+    "admin.inProgress": "ప్రోగతిలో",
+    "admin.resolved": "పరిష్కారం",
+
+    "issue.posted": "పోస్ట్ చేయబడింది",
+    "issue.latestComments": "తాజా వ్యాఖ్యలు",
+    "issue.noComments": "ఇంకా వ్యాఖ్యలు లేవు.",
+    "issue.addComment": "వ్యాఖ్య జోడించండి",
+    "issue.add": "జోడించండి",
+    "issue.reportReason": "డూప్లికేట్/స్పామ్ నివేదన కారణం",
+    "issue.report": "నివేదన",
+    "issue.defaultReportReason": "సంభావ్య డూప్లికేట్ లేదా స్పామ్",
   },
 } as const;
 

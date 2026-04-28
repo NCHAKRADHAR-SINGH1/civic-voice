@@ -10,7 +10,7 @@ export function LanguageSwitcher() {
     <label className="flex items-center gap-2 text-sm text-[var(--muted)]">
       <span>{t("language.select")}</span>
       <select
-        className="input h-9 w-32 py-1"
+        className="input h-9 w-48 py-1"
         value={locale}
         onChange={(e) => setLocale(e.target.value as Locale)}
         aria-label={t("language.select")}

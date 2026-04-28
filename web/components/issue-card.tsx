@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { ArrowBigUp, Flag, MessageCircle } from "lucide-react";
+import { Flag, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { Issue } from "@/lib/types";
 import { apiFetch } from "@/lib/api";
@@ -20,7 +20,7 @@ export function IssueCard({ issue, onRefresh }: Props) {
   const [reportReason, setReportReason] = useState("");
   const [loading, setLoading] = useState(false);
   const [actionError, setActionError] = useState("");
-  const canVote = issue.isInUserLocation !== false && issue.status !== "RESOLVED";
+  const canVote = issue.status !== "RESOLVED";
 
   const upvote = async () => {
     if (!canVote) {
@@ -153,7 +153,7 @@ export function IssueCard({ issue, onRefresh }: Props) {
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <button className="btn-secondary flex items-center gap-1" type="button" disabled={loading || !canVote} onClick={upvote}>
-          <ArrowBigUp size={16} /> {issue._count.upvotes}
+          📢 Raise Voice ({issue._count.upvotes})
         </button>
         <span className="inline-flex items-center gap-1 text-[var(--muted)]">
           <MessageCircle size={16} /> {issue._count.comments}
@@ -162,7 +162,6 @@ export function IssueCard({ issue, onRefresh }: Props) {
       </div>
 
       {!canVote && issue.status === "RESOLVED" && <p className="text-xs text-green-700 dark:text-green-300">This issue has been resolved.</p>}
-      {!canVote && issue.isInUserLocation === false && <p className="text-xs text-amber-700 dark:text-amber-300">Voting is allowed only for your primary location.</p>}
       {actionError && <p className="text-xs text-red-500">{actionError}</p>}
 
       <div className="space-y-2 rounded-[1.35rem] border border-black/10 p-4">
