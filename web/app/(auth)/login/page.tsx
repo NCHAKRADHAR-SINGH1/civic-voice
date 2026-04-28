@@ -193,9 +193,11 @@ export default function LoginPage() {
             {loading ? t("login.pleaseWait") : mode === "register" ? "Create Account" : "Login"}
           </button>
 
-          <p className="text-center text-xs text-[var(--muted)]">
-            <Link href="/forgot-password" className="underline">Forgot password? Reset with OTP</Link>
-          </p>
+          {mode === "login" && (
+            <p className="text-center text-xs text-[var(--muted)]">
+              <Link href="/forgot-password" className="underline">Forgot password? Reset with OTP</Link>
+            </p>
+          )}
         </form>
 
         <p className="mt-5 text-xs text-[var(--muted)]">
