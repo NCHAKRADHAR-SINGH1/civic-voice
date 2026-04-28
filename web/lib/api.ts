@@ -40,29 +40,45 @@ export async function apiFetch<T>(path: string, options: RequestOptions = {}): P
     headers["Content-Type"] = "application/json";
   }
 
-  const response = await fetch(`${baseUrl}${path}`, {
-    method: options.method || "GET",
-    headers,
-    credentials: "include",
-    body: options.body
-      ? options.isFormData
-        ? (options.body as FormData)
-        : JSON.stringify(options.body)
-      : undefined,
-    cache: "no-store",
-  });
+  try {
+    const response = await fetch(`${baseUrl}${path}`, {
+      method: options.method || "GET",
+      headers,
+      credentials: "include",
+      body: options.body
+        ? options.isFormData
+          ? (options.body as FormData)
+          : JSON.stringify(options.body)
+        : undefined,
+      cache: "no-store",
+    });
 
-  const contentType = response.headers.get("content-type") || "";
-  const payload = contentType.includes("application/json")
-    ? await response.json()
-    : await response.text();
+    const contentType = response.headers.get("content-type") || "";
+    const payload = contentType.includes("application/json")
+      ? await response.json()
+      : await response.text();
 
-  if (!response.ok) {
-    if (typeof payload === "string") {
-      throw new ApiError(payload || "Request failed", response.status);
+    if (!response.ok) {
+      if (typeof payload === "string") {
+        throw new ApiError(payload || "Request failed", response.status);
+      }
+      throw new ApiError(payload?.message || "Request failed", response.status);
     }
-    throw new ApiError(payload?.message || "Request failed", response.status);
-  }
 
-  return payload as T;
+    return payload as T;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    
+    if (error instanceof TypeError) {
+      // Network error or fetch failed
+      throw new ApiError(
+        "Unable to connect to server. Please ensure the backend is running and try again.",
+        0
+      );
+    }
+    
+    throw error;
+  }
 }
