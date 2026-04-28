@@ -42,15 +42,10 @@ export default function ForgotPasswordPage() {
 
     try {
       const normalizedIdentifier = normalizeMobileNumber(identifier);
-      const response = await apiFetch("/auth/send-password-reset-otp", {
+      await apiFetch("/auth/send-password-reset-otp", {
         method: "POST",
-        body: JSON.stringify({ identifier: normalizedIdentifier }),
-      }) as Response;
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to send OTP");
-      }
+        body: { identifier: normalizedIdentifier },
+      });
 
       setSent(true);
       setSuccessMessage("OTP sent to your registered mobile number");
@@ -80,20 +75,15 @@ export default function ForgotPasswordPage() {
 
     try {
       const normalizedIdentifier = normalizeMobileNumber(identifier);
-      const response = await apiFetch("/auth/reset-password-otp", {
+      await apiFetch("/auth/reset-password-otp", {
         method: "POST",
-        body: JSON.stringify({
+        body: {
           identifier: normalizedIdentifier,
           otp,
           password: newPassword,
           confirmPassword,
-        }),
-      }) as Response;
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || "Failed to reset password");
-      }
+        },
+      });
 
       setSuccessMessage("Password reset successfully! Redirecting to dashboard...");
       setTimeout(() => router.push("/dashboard"), 2000);
