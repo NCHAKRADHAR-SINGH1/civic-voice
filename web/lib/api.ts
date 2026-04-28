@@ -17,7 +17,7 @@ function resolveApiBaseUrl() {
 }
 
 type RequestOptions = {
-  method?: "GET" | "POST" | "PUT" | "PATCH";
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   isFormData?: boolean;
 };
